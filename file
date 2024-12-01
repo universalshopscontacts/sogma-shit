@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diabetes App</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        background-color: #000; /* Black background */
+        color: #fff; /* White text */
+        font-size: 1.5em; /* Default font size for small screens */
+    }
+
+    h1 {
+        margin-top: 20px;
+        color: #fff; /* White color for heading */
+        font-weight: bold; /* Make heading bold */
+        font-size: 3em; /* Larger heading size */
+    }
+
+    input[type="number"], select, input[type="button"] {
+        padding: 20px; /* Larger padding */
+        margin: 20px; /* Larger margin */
+        background-color: #333; /* Dark background for inputs and select */
+        color: #fff; /* White text for inputs */
+        border: 1px solid #555;
+        font-size: 3em; /* Make numbers and text larger */
+        font-weight: bold; /* Bold numbers and text */
+        width: 100%; /* Full width */
+        max-width: 300px; /* Limit max width for large screens */
+    }
+
+    #timer {
+        font-size: 6em; /* Larger timer text */
+        margin: 20px;
+        color: #fff; /* White timer text */
+        font-weight: bold; /* Bold timer text */
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7); /* Dark overlay background */
+        display: none;
+    }
+
+    .overlay-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #222; /* Dark background for overlay content */
+        padding: 30px; /* Larger padding */
+        border-radius: 5px;
+        width: 80%; /* Width of overlay content */
+        max-width: 350px;
+        text-align: left;
+        color: #fff; /* White text inside the overlay */
+    }
+
+    #steps {
+        max-height: 150px;
+        overflow-y: scroll;
+        margin-top: 10px;
+        color: #fff; /* White text for steps */
+        font-size: 1.2em; /* Larger font size for steps */
+    }
+
+    #steps ul {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    #steps li {
+        margin: 10px 0;
+    }
+
+    #steps::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #steps::-webkit-scrollbar-thumb {
+        background-color: #555;
+        border-radius: 4px;
+    }
+
+    #steps::-webkit-scrollbar-thumb:hover {
+        background-color: #333;
+    }
+
+    @media (min-width: 768px) {
+        body {
+            font-size: 2em; /* Larger font for bigger screens */
+        }
+
+        h1 {
+            font-size: 4em; /* Larger heading on big screens */
+        }
+
+        input[type="number"], select, input[type="button"] {
+            font-size: 4em; /* Larger font for inputs and button */
+        }
+
+        #timer {
+            font-size: 8em; /* Larger timer text on bigger screens */
+        }
+    }
+</style>
+</head>
+<body>
+
+<h1>Diabetes App</h1>
+
+<input type="number" id="hours" placeholder="Hours">
+<input type="number" id="minutes" placeholder="Minutes">
+<input type="number" id="seconds" placeholder="Seconds">
+<br>
+<select id="conditions">
+    <option value="">Select a condition</option>
+    <option value="Coeliac disease">Coeliac disease</option>
+    <option value="Thyroid disease">Thyroid disease</option>
+    <option value="Polycystic ovary syndrome">Polycystic ovary syndrome</option>
+    <option value="Diabetes insipidus">Diabetes insipidus</option>
+    <option value="Necrobiosis lipoidica diabeticorum">Necrobiosis lipoidica diabeticorum</option>
+    <option value="Mastopathy">Mastopathy</option>
+    <option value="Muscular conditions">Muscular conditions</option>
+    <option value="Limited joint mobility">Limited joint mobility</option>
+    <option value="Frozen shoulder">Frozen shoulder</option>
+    <option value="Dupuytren’s contracture">Dupuytren’s contracture</option>
+    <option value="Trigger finger">Trigger finger</option>
+    <option value="Carpal tunnel syndrome">Carpal tunnel syndrome</option>
+    <option value="Dental problems">Dental problems</option>
+    <option value="Haemochromatosis">Haemochromatosis</option>
+    <option value="Insulin resistance and severe insulin resistance">Insulin resistance and severe insulin resistance</option>
+    <option value="Pancreatitis">Pancreatitis</option>
+    <option value="Liver disease">Liver disease</option>
+</select>
+<br>
+<input type="button" value="Start Timer" onclick="startTimer()">
+<div id="timer">00:00:00</div>
+
+<audio id="alertSound" src="C:\Users\unive\Downloads\sus.mp3" loop></audio>
+
+<div class="overlay" id="overlay">
+    <div class="overlay-content">
+        <button onclick="endTimer()">End Timer</button>
+        <button onclick="stopSound()">Stop Sound</button>
+        <div id="steps" style="display: none;">
+            <p><strong>What to do when blood sugar is low:</strong></p>
+            <ul>
+                <li>Eat 15-20 grams of fast-acting carbohydrates (e.g., glucose tablets, fruit juice, soda).</li>
+                <li>Wait for 15 minutes, then check your blood sugar level again.</li>
+                <li>If blood sugar is still low, repeat the process until your levels are normal.</li>
+                <li>Once your levels are stable, eat a snack or meal if your next meal is more than an hour away.</li>
+                <li>If symptoms worsen or persist, seek medical assistance immediately.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    let timer;
+    let totalSeconds = 0;
+
+    function startTimer() {
+        const hours = parseInt(document.getElementById('hours').value) || 0;
+        const minutes = parseInt(document.getElementById('minutes').value) || 0;
+        const seconds = parseInt(document.getElementById('seconds').value) || 0;
+
+        totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+        timer = setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer() {
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        document.getElementById('timer').textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+        if (totalSeconds === 0) {
+            clearInterval(timer);
+            document.getElementById('overlay').style.display = 'block';
+
+            // Play the alert sound when timer finishes
+            document.getElementById('alertSound').play();
+
+            const condition = document.getElementById('conditions').value;
+            if (condition === "Coeliac disease") {
+                document.getElementById('steps').style.display = 'block';
+            }
+        } else {
+            totalSeconds--;
+        }
+    }
+
+    function endTimer() {
+        document.getElementById('alertSound').pause(); // Stops the sound
+        document.getElementById('overlay').style.display = 'none'; // Closes the overlay
+    }
+
+    function stopSound() {
+        document.getElementById('alertSound').pause(); // Stops the sound
+    }
+</script>
+
+</body>
+</html>
